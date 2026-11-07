@@ -1,6 +1,6 @@
 Nama: Aisyah Dhia Humaira
 
-Deskripsi Repository: Repository ini adalah tempat saya menyimpan hasil dan catatan dari workshop "From AI to GitHub: Building with AI, Managing Change with GitHub" Isinya ada proyek kecil yang saya buat dengan bantuan AI.
+Deskripsi Repository: Repository ini adalah tempat saya menyimpan hasil dan catatan dari workshop "From AI to GitHub: Building with AI, Managing Change with GitHub" Isinya ada proyek kecil yang saya buat dengan bantuan AI (aplikasi Habit Tracker Harian di index.html).
 
 Tujuan Repository: Latihan langsung alur kerja Git dan GitHub: git init, git add, git commit, git push; dan jadi catatan belajar yang bisa saya buka lagi kapan saja, terutama soal cara menulis prompt AI yang baik dan cara memakai Git.
 

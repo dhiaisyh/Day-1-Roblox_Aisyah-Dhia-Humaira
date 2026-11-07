@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Habit Tracker Harian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef4f3; --surface:#ffffff; --ink:#12302f; --muted:#5b7473; --line:#d3e0de;
+  --sport:#e4572e; --water:#2a7fba; --read:#7a4fb5; --sleep:#1f4e5f;
+  --track:#e3ecea;
+  --font:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0f1d1c;--surface:#172a29;--ink:#e6f2f0;--muted:#92aeab;--line:#2b4543;--track:#243c3a;
+    --sport:#ff8156;--water:#5db3ea;--read:#b690f0;--sleep:#7fc1d8;}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.5;padding:20px 16px 48px}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1;margin:0 0 6px;font-weight:800;letter-spacing:-.03em}
+h2{font-size:1.15rem;margin:0 0 12px;font-weight:600}
+p.sub{margin:0 0 20px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;color:var(--muted);flex:1 1 150px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
+button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:10px 16px;cursor:pointer;background:var(--ink);color:var(--bg)}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.del{background:transparent;color:var(--sport);padding:4px 8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;border-top:6px solid var(--c)}
+.tile .name{color:var(--muted);font-size:.9rem}
+.tile .val{font-size:2.3rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.tile .val small{font-size:1rem;font-weight:400;color:var(--muted);margin-left:4px}
+.bar{height:8px;border-radius:99px;background:var(--track);margin:10px 0 4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c);border-radius:99px;transition:width .4s}
+.tile .goal{font-size:.82rem;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+ul.list{list-style:none;margin:12px 0 0;padding:0}
+ul.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.empty{color:var(--muted);margin:12px 0 0}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:520px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+.mini{display:inline-block;height:8px;border-radius:99px;background:var(--c);vertical-align:middle;margin-right:6px;min-width:2px}
+tr.sel td{background:var(--track)}
+.hint{font-size:.82rem;color:var(--muted);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title">Habit Tracker Harian</h1>
+  <p class="sub">Catat olahraga, minum, membaca, dan tidur. Data tersimpan di browser Anda.</p>
+ 
+  <section class="card" aria-label="Profil">
+    <div class="row">
+      <label>Nama<input id="name" type="text" placeholder="Nama Anda" autocomplete="name"></label>
+      <label>Usia (tahun)<input id="age" type="number" min="1" max="120" placeholder="Usia"></label>
+      <label>Tanggal<input id="date" type="date"></label>
+    </div>
+  </section>
+ 
+  <section class="tiles" aria-label="Ringkasan hari ini">
+    <div class="tile" style="--c:var(--sport)"><div class="name">Olahraga</div><div class="val"><span id="vKcal">0</span><small>kkal terbakar</small></div><div class="bar"><i id="bKcal"></i></div><div class="goal" id="gKcal"></div></div>
+    <div class="tile" style="--c:var(--water)"><div class="name">Air minum</div><div class="val"><span id="vWater">0</span><small>liter</small></div><div class="bar"><i id="bWater"></i></div><div class="goal" id="gWater"></div></div>
+    <div class="tile" style="--c:var(--read)"><div class="name">Membaca</div><div class="val"><span id="vRead">0</span><small>jam</small></div><div class="bar"><i id="bRead"></i></div><div class="goal" id="gRead"></div></div>
+    <div class="tile" style="--c:var(--sleep)"><div class="name">Tidur</div><div class="val"><span id="vSleep">0</span><small>jam</small></div><div class="bar"><i id="bSleep"></i></div><div class="goal" id="gSleep"></div></div>
+  </section>
+ 
+  <div class="cols">
+    <section class="card">
+      <h2>Olahraga</h2>
+      <div class="row">
+        <label>Jenis olahraga
+          <select id="sport"></select>
+        </label>
+        <label id="customName" hidden>Nama olahraga<input id="sportName" type="text" placeholder="Mis. panjat tebing"></label>
+        <label>Durasi (menit)<input id="minutes" type="number" min="1" placeholder="30"></label>
+        <label id="customKcal" hidden>Kalori (kkal)<input id="kcal" type="number" min="0" placeholder="200"></label>
+        <button id="addSport" type="button">Tambah</button>
+      </div>
+      <p class="hint">Kalori dihitung perkiraan untuk orang dewasa ±60 kg.</p>
+      <ul class="list" id="sportList"></ul>
+    </section>
+ 
+    <section class="card">
+      <h2>Minum, membaca, tidur</h2>
+      <div class="row">
+        <label>Air minum (liter)<input id="water" type="number" min="0" step="0.05" placeholder="0"></label>
+        <button id="plusGlass" type="button" class="ghost">+1 gelas (0,25 L)</button>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label>Membaca (jam)<input id="read" type="number" min="0" max="24" step="0.25" placeholder="0"></label>
+        <label>Tidur (jam)<input id="sleep" type="number" min="0" max="24" step="0.25" placeholder="0"></label>
+      </div>
+      <p class="hint">Perubahan tersimpan otomatis.</p>
+    </section>
+  </div>
+ 
+  <section class="card">
+    <h2>7 hari terakhir</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tanggal</th><th>Kalori (kkal)</th><th>Air (L)</th><th>Baca (jam)</th><th>Tidur (jam)</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+ 
+<script>
+var KEY = "habit-tracker-v1";
+var SPORTS = [
+  ["Jalan kaki", 4], ["Lari", 10], ["Bersepeda", 7], ["Renang", 9], ["Yoga", 3],
+  ["Senam", 6], ["Bulu tangkis", 6], ["Sepak bola", 9], ["Angkat beban", 5], ["Lainnya (isi sendiri)", 0]
+];
+var state = { name: "", age: "", days: {} };
+var $ = function (id) { return document.getElementById(id); };
+ 
+function load() {
+  try { var s = localStorage.getItem(KEY); if (s) state = JSON.parse(s); } catch (e) {}
+  if (!state.days) state.days = {};
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+ 
+function iso(d) {
+  var m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
+  return d.getFullYear() + "-" + m + "-" + day;
+}
+function day(key) {
+  if (!state.days[key]) state.days[key] = { workouts: [], water: 0, read: 0, sleep: 0 };
+  return state.days[key];
+}
+function fmt(n) { return (Math.round(n * 100) / 100).toString().replace(".", ","); }
+function sleepGoal() {
+  var a = parseInt(state.age, 10);
+  if (!a) return 8;
+  if (a < 14) return 10;
+  if (a < 18) return 9;
+  return a < 65 ? 8 : 7.5;
+}
+function pct(v, g) { return Math.min(100, g ? (v / g) * 100 : 0); }
+ 
+function render() {
+  var key = $("date").value, d = day(key);
+  var kcal = d.workouts.reduce(function (a, w) { return a + w.kcal; }, 0);
+  var goals = { kcal: 300, water: 2, read: 1, sleep: sleepGoal() };
+ 
+  $("title").textContent = state.name ? "Halo, " + state.name + (state.age ? " (" + state.age + " th)" : "") : "Habit Tracker Harian";
+ 
+  $("vKcal").textContent = fmt(kcal);   $("bKcal").style.width = pct(kcal, goals.kcal) + "%";
+  $("vWater").textContent = fmt(d.water); $("bWater").style.width = pct(d.water, goals.water) + "%";
+  $("vRead").textContent = fmt(d.read);   $("bRead").style.width = pct(d.read, goals.read) + "%";
+  $("vSleep").textContent = fmt(d.sleep); $("bSleep").style.width = pct(d.sleep, goals.sleep) + "%";
+  $("gKcal").textContent = "Target " + goals.kcal + " kkal";
+  $("gWater").textContent = "Target " + fmt(goals.water) + " liter";
+  $("gRead").textContent = "Target " + fmt(goals.read) + " jam";
+  $("gSleep").textContent = "Target " + fmt(goals.sleep) + " jam" + (state.age ? " untuk usia " + state.age : "");
+ 
+  $("water").value = d.water || "";
+  $("read").value = d.read || "";
+  $("sleep").value = d.sleep || "";
+ 
+  var ul = $("sportList");
+  ul.innerHTML = "";
+  if (!d.workouts.length) {
+    var p = document.createElement("li"); p.className = "empty"; p.style.border = "0";
+    p.textContent = "Belum ada olahraga di tanggal ini. Pilih jenis dan durasi, lalu tekan Tambah.";
+    ul.appendChild(p);
+  }
+  d.workouts.forEach(function (w, i) {
+    var li = document.createElement("li");
+    var t = document.createElement("span");
+    t.textContent = w.name + ": " + w.min + " menit, " + fmt(w.kcal) + " kkal";
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "del"; b.textContent = "Hapus";
+    b.setAttribute("aria-label", "Hapus " + w.name);
+    b.onclick = function () { d.workouts.splice(i, 1); save(); render(); };
+    li.appendChild(t); li.appendChild(b); ul.appendChild(li);
+  });
+ 
+  renderHistory(key);
+}
+ 
+function renderHistory(selKey) {
+  var body = $("history"), sel = new Date($("date").value + "T00:00:00");
+  body.innerHTML = "";
+  for (var i = 0; i < 7; i++) {
+    var dt = new Date(sel); dt.setDate(sel.getDate() - i);
+    var k = iso(dt), d = state.days[k] || { workouts: [], water: 0, read: 0, sleep: 0 };
+    var kc = d.workouts.reduce(function (a, w) { return a + w.kcal; }, 0);
+    var tr = document.createElement("tr"); if (i === 0) tr.className = "sel";
+    var label = dt.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" });
+    var cells = [
+      [label, null, 0],
+      [fmt(kc), "var(--sport)", pct(kc, 300)],
+      [fmt(d.water), "var(--water)", pct(d.water, 2)],
+      [fmt(d.read), "var(--read)", pct(d.read, 1)],
+      [fmt(d.sleep), "var(--sleep)", pct(d.sleep, sleepGoal())]
+    ];
+    cells.forEach(function (c) {
+      var td = document.createElement("td");
+      if (c[1]) {
+        var m = document.createElement("span");
+        m.className = "mini"; m.style.setProperty("--c", c[1]); m.style.width = (c[2] * 0.6) + "px";
+        td.appendChild(m);
+      }
+      td.appendChild(document.createTextNode(c[0]));
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  }
+}
+ 
+function init() {
+  load();
+  var sel = $("sport");
+  SPORTS.forEach(function (s, i) {
+    var o = document.createElement("option"); o.value = i; o.textContent = s[0]; sel.appendChild(o);
+  });
+  $("name").value = state.name || "";
+  $("age").value = state.age || "";
+  $("date").value = iso(new Date());
+ 
+  $("name").oninput = function () { state.name = this.value.trim(); save(); render(); };
+  $("age").oninput = function () { state.age = this.value; save(); render(); };
+  $("date").onchange = function () { if (!this.value) this.value = iso(new Date()); render(); };
+ 
+  sel.onchange = function () {
+    var custom = SPORTS[sel.value][1] === 0;
+    $("customName").hidden = !custom; $("customKcal").hidden = !custom;
+  };
+ 
+  $("addSport").onclick = function () {
+    var s = SPORTS[sel.value], min = parseFloat($("minutes").value);
+    if (!min || min <= 0) { $("minutes").focus(); return; }
+    var name = s[0], kcal;
+    if (s[1] === 0) {
+      name = $("sportName").value.trim() || "Olahraga lain";
+      kcal = parseFloat($("kcal").value);
+      if (isNaN(kcal) || kcal < 0) { $("kcal").focus(); return; }
+    } else { kcal = s[1] * min; }
+    day($("date").value).workouts.push({ name: name, min: min, kcal: kcal });
+    $("minutes").value = ""; $("kcal").value = ""; $("sportName").value = "";
+    save(); render();
+  };
+ 
+  $("plusGlass").onclick = function () { var d = day($("date").value); d.water = Math.round((d.water + 0.25) * 100) / 100; save(); render(); };
+  ["water", "read", "sleep"].forEach(function (f) {
+    $(f).onchange = function () {
+      var v = parseFloat(this.value); day($("date").value)[f] = isNaN(v) || v < 0 ? 0 : v; save(); render();
+    };
+  });
+  render();
+}
+init();
+</script>
+</body>
+</html>
